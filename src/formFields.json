@@ -1,0 +1,47 @@
+[
+    {
+      "type": "textfield",
+      "label": "First Name",
+      "name": "firstName",
+      "placeholder": "Enter your First Name..."
+    },
+    {
+      "type": "textfield",
+      "label": "Last Name",
+      "name": "lastName",
+      "placeholder": "Enter your Last Name..."
+    },
+    {
+      "type": "email",
+      "label": "Email",
+      "name": "email",
+      "placeholder": "Enter your Email..."
+    },
+    {
+      "type": "phone",
+      "label": "Phone Number",
+      "name": "phoneNumber",
+      "placeholder": "Enter your Phone Number...",
+      "inputType": "tel"
+    },
+    {
+      "type": "radio",
+      "label": "Gender",
+      "name": "gender",
+      "values": ["Male", "Female"]
+    },
+    {
+      "type": "select",
+      "label": "Country",
+      "name": "country",
+      "values": ["Iran", "Turkey", "Germany", "Zimbabwe"],
+      "placeholder": "Select your Country..."
+    },
+    {
+      "type": "password",
+      "label": "Password",
+      "name": "password",
+      "placeholder": "Enter a secure password..."
+    }
+  ]
+  
