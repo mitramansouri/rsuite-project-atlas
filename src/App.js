@@ -7,20 +7,48 @@ import formFields from './formFields.json';
 const { StringType } = Schema.Types;
 
 // Create a dynamic schema based on your `formFields`
+// const generateSchema = (fields) => {
+//   const schemaObject = fields.reduce((acc, field) => {
+//     let type = StringType().isRequired(`${field.label} is required`);
+//     if (field.type === 'email') {
+//       type = type.isEmail('Please enter a valid email address');
+//     }
+//     if (field.type === 'password') {
+//       type = type.minLength(6, 'Password must be at least 6 characters long');
+//     }
+//     if (field.type === 'phone') {
+//       type = type
+//         .pattern(/^\d+$/, 'Phone number must contain only numeric values')
+//         .minLength(10, 'Phone number must be at least 10 digits long');
+//     }
+//     acc[field.name] = type;
+//     return acc;
+//   }, {});
+
+//   return Schema.Model(schemaObject);
+// };
+
 const generateSchema = (fields) => {
   const schemaObject = fields.reduce((acc, field) => {
-    let type = StringType().isRequired(`${field.label} is required`);
-    if (field.type === 'email') {
-      type = type.isEmail('Please enter a valid email address');
+    let type = StringType();
+
+    // Handle validation rules from JSON
+    const validation = field.validation || {};
+
+    if (validation.required) {
+      type = type.isRequired(validation.errorMessage || `${field.label} is required`);
     }
-    if (field.type === 'password') {
-      type = type.minLength(6, 'Password must be at least 6 characters long');
+    if (validation.minLength) {
+      type = type.minLength(validation.minLength, validation.errorMessage);
     }
-    if (field.type === 'phone') {
-      type = type
-        .pattern(/^\d+$/, 'Phone number must contain only numeric values')
-        .minLength(10, 'Phone number must be at least 10 digits long');
+    if (validation.isEmail) {
+      type = type.isEmail(validation.errorMessage || 'Please enter a valid email address');
     }
+    if (validation.pattern) {
+      const regex = new RegExp(validation.pattern);
+      type = type.pattern(regex, validation.errorMessage);
+    }
+
     acc[field.name] = type;
     return acc;
   }, {});
@@ -87,9 +115,9 @@ const App = () => {
               />
             ) : null}
 
-            {errors[field.name] && (
+            {/* {errors[field.name] && (
               <p className="text-red-500 text-sm mt-1">{errors[field.name]}</p>
-            )}
+            )} */}
           </Form.Group>
         ))}
 
