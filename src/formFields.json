@@ -76,5 +76,47 @@
       "minLength": 6,
       "errorMessage": "Password must be at least 6 characters long"
     }
+  }, 
+  {
+    "type": "radio",
+    "label": "Marital Status",
+    "name": "maritalStatus",
+    "values": ["Single", "Married"],
+    "validation": {
+      "required": true,
+      "errorMessage": "Please select your marital status"
+    }
+  },
+  {
+    "type": "radio",
+    "label": "Do you have children?",
+    "name": "children",
+    "values": ["Yes", "No"],
+    "validation": {
+      "required": true,
+      "errorMessage": "Please specify if you have children"
+    }
+  },
+  {
+    "type": "textfield",
+    "label": "First Child's Name",
+    "name": "firstchildName",
+    "placeholder": "Enter your First child's Name...",
+    "validation": {
+      "required": true,
+      "minLength": 2,
+      "errorMessage": "First Name must be at least 2 characters long"
+    }
+  },
+  {
+    "type": "textfield",
+    "label": "Spouse's Name",
+    "name": "spouseName",
+    "placeholder": "Enter your Spouse's Name...",
+    "validation": {
+      "required": true,
+      "minLength": 2,
+      "errorMessage": "First Name must be at least 2 characters long"
+    }
   }
 ]
