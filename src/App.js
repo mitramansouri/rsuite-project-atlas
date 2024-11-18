@@ -10,9 +10,7 @@ const { StringType } = Schema.Types;
 const generateSchema = (fields) => {
   const schemaObject = fields.reduce((acc, field) => {
     let type = StringType();
-
     const validation = field.validation || {};
-
     if (validation.required) {
       type = type.isRequired(validation.errorMessage || `${field.label} is required`);
     }
@@ -26,21 +24,20 @@ const generateSchema = (fields) => {
       const regex = new RegExp(validation.pattern);
       type = type.pattern(regex, validation.errorMessage);
     }
-
     acc[field.name] = type;
     return acc;
   }, {});
 
   return Schema.Model(schemaObject);
 };
-
 const App = () => {
   const formRef = useRef(null);
-  const [formValues, setFormValues] = useState({
-    gender: '',
-    maritalStatus: '',
-    children: '',
-    childrenNames: [],
+  const [formValues, setFormValues] = useState(() => {
+    const initialValues = formFields.reduce((acc, field) => {
+      acc[field.name] = '';
+      return acc;
+    }, {});
+    return initialValues;
   });
   // eslint-disable-next-line no-unused-vars
   const [errors, setErrors] = useState({});
@@ -53,11 +50,11 @@ const App = () => {
       setFormValues((prevValues) => ({
         ...prevValues,
         maritalStatus: value,
-        spouseName: undefined,
-        children: undefined,
-        childrenNames: [],
+        spouseName: '', // Set to empty string instead of undefined
+        children: '',   // Set to empty string instead of undefined
+        childrenNames: [], // Reset child names
       }));
-      setChildrenNames(['']);
+      setChildrenNames(['']); // Reset child-related fields
     } else {
       setFormValues((prevValues) => ({
         ...prevValues,
@@ -65,6 +62,7 @@ const App = () => {
       }));
     }
   };
+  
 
   const handleAddChild = () => {
     setChildrenNames([...childrenNames, '']);
@@ -98,15 +96,50 @@ const App = () => {
   };
   const renderFields = () => {
     const renderedFields = [];
-    // Dynamically render all fields except Gender
-    formFields
-      .filter(
-        (field) =>
-          !['gender', 'maritalStatus', 'spouseName', 'children', 'firstchildName'].includes(
-            field.name
-          )
-      )
-      .forEach((field) => {
+    
+    formFields.forEach((field) => {
+      if (field.name === 'gender') {
+        // Dynamically render the Gender field
+        renderedFields.push(
+          <Form.Group controlId={field.name} key={field.name}>
+            <Form.ControlLabel>{field.label}</Form.ControlLabel>
+            <RadioGroup
+              name={field.name}
+              value={formValues[field.name]}
+              onChange={(value) =>
+                setFormValues((prevValues) => ({ ...prevValues, [field.name]: value }))
+              }
+              inline
+            >
+              {field.values.map((value) => (
+                <Radio value={value} key={value}>
+                  {value}
+                </Radio>
+              ))}
+            </RadioGroup>
+          </Form.Group>
+        );
+      } else if (field.name === 'maritalStatus') {
+        // Render the Marital Status field
+        renderedFields.push(
+          <Form.Group controlId={field.name} key={field.name}>
+            <Form.ControlLabel>{field.label}</Form.ControlLabel>
+            <RadioGroup
+              name={field.name}
+              value={formValues.maritalStatus}
+              onChange={handleMaritalStatusChange}
+              inline
+            >
+              {field.values.map((value) => (
+                <Radio value={value} key={value}>
+                  {value}
+                </Radio>
+              ))}
+            </RadioGroup>
+          </Form.Group>
+        );
+      } else if (!['spouseName', 'children', 'firstchildName'].includes(field.name)) {
+        // Render other dynamic fields
         renderedFields.push(
           <Form.Group controlId={field.name} key={field.name}>
             <Form.ControlLabel>{field.label}</Form.ControlLabel>
@@ -134,51 +167,9 @@ const App = () => {
             />
           </Form.Group>
         );
-        // Insert the Gender field after "Phone Number"
-        if (field.name === 'phoneNumber') {
-          renderedFields.push(
-            <Form.Group controlId="gender" key="gender">
-              <Form.ControlLabel>Gender</Form.ControlLabel>
-              <RadioGroup
-                name="gender"
-                value={formValues.gender}
-                onChange={(value) =>
-                  setFormValues((prevValues) => ({ ...prevValues, gender: value }))
-                }
-                inline
-              >
-                <Radio value="Male">Male</Radio>
-                <Radio value="Female">Female</Radio>
-                <Radio value="Other">Other</Radio>
-              </RadioGroup>
-            </Form.Group>
-          );
-        }
-      });
-    // Render "Marital Status" and related fields dynamically
-    const maritalStatusField = formFields.find(
-      (field) => field.name === 'maritalStatus'
-    );
-    if (maritalStatusField) {
-      renderedFields.push(
-        <Form.Group controlId={maritalStatusField.name} key={maritalStatusField.name}>
-          <Form.ControlLabel>{maritalStatusField.label}</Form.ControlLabel>
-          <RadioGroup
-            name={maritalStatusField.name}
-            value={formValues.maritalStatus}
-            onChange={handleMaritalStatusChange}
-            inline
-          >
-            {maritalStatusField.values.map((value) => (
-              <Radio value={value} key={value}>
-                {value}
-              </Radio>
-            ))}
-          </RadioGroup>
-        </Form.Group>
-      );
-    }
-    // Add logic for spouse name and children fields
+      }
+    });
+  
     if (formValues.maritalStatus === 'Married') {
       const spouseField = formFields.find((field) => field.name === 'spouseName');
       if (spouseField) {
@@ -249,8 +240,10 @@ const App = () => {
         </Button>
       );
     }
+  
     return renderedFields;
   };
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Form
