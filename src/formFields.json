@@ -99,11 +99,11 @@
   },
   {
     "type": "textfield",
-    "label": "First Child's Name",
+    "label": "Child's Name",
     "name": "firstchildName",
-    "placeholder": "Enter your First child's Name...",
+    "placeholder": "Enter your child's Name...",
     "validation": {
-      "required": true,
+      "required": false,
       "minLength": 2,
       "errorMessage": "First Name must be at least 2 characters long"
     }
@@ -114,7 +114,7 @@
     "name": "spouseName",
     "placeholder": "Enter your Spouse's Name...",
     "validation": {
-      "required": true,
+      "required": false,
       "minLength": 2,
       "errorMessage": "First Name must be at least 2 characters long"
     }
