@@ -54,28 +54,43 @@ const App = () => {
 
     // Render all fields above "Marital Status"
     const fieldsAboveMaritalStatus = formFields.filter(
-      (field) => !['maritalStatus', 'spouseName', 'children', 'firstchildName'].includes(field.name)
+      (field) =>
+        !['maritalStatus', 'spouseName', 'children', 'firstchildName'].includes(field.name)
     );
+
     fieldsAboveMaritalStatus.forEach((field) => {
       renderedFields.push(
         <Form.Group controlId={field.name} key={field.name}>
           <Form.ControlLabel className="block font-semibold text-gray-700">
             {field.label}
           </Form.ControlLabel>
-          <Form.Control
-            name={field.name}
-            type={field.type === 'password' ? 'password' : 'text'}
-            placeholder={field.placeholder}
-            accepter={
-              field.type === 'select' ? SelectPicker : field.type === 'radio' ? RadioGroup : Input
-            }
-            data={
-              field.type === 'select'
-                ? field.values.map((value) => ({ label: value, value }))
-                : undefined
-            }
-            inline={field.type === 'radio'}
-          />
+          {field.type === 'radio' ? (
+            <Form.Control
+              name={field.name}
+              accepter={RadioGroup}
+              inline
+            >
+              {field.values.map((value) => (
+                <Radio value={value} key={value} className="mr-4">
+                  {value}
+                </Radio>
+              ))}
+            </Form.Control>
+          ) : (
+            <Form.Control
+              name={field.name}
+              type={field.type === 'password' ? 'password' : 'text'}
+              placeholder={field.placeholder}
+              accepter={
+                field.type === 'select' ? SelectPicker : Input
+              }
+              data={
+                field.type === 'select'
+                  ? field.values.map((value) => ({ label: value, value }))
+                  : undefined
+              }
+            />
+          )}
         </Form.Group>
       );
     });

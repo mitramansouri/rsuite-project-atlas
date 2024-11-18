@@ -54,7 +54,7 @@
       "required": true,
       "errorMessage": "Please select your gender"
     }
-  },
+  },  
   {
     "type": "select",
     "label": "Country",
