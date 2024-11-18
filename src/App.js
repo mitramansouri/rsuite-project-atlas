@@ -96,169 +96,8 @@ const App = () => {
       console.log('Validation failed');
     }
   };
-
-  // const renderFields = () => {
-  //   const renderedFields = [];
-
-  //   // Render "Gender" radio button field
-  //   renderedFields.push(
-  //     <Form.Group controlId="gender" key="gender">
-  //       <Form.ControlLabel>Gender</Form.ControlLabel>
-  //       <RadioGroup
-  //         name="gender"
-  //         value={formValues.gender}
-  //         onChange={(value) =>
-  //           setFormValues((prevValues) => ({ ...prevValues, gender: value }))
-  //         }
-  //         inline
-  //       >
-  //         <Radio value="Male">Male</Radio>
-  //         <Radio value="Female">Female</Radio>
-  //         <Radio value="Other">Other</Radio>
-  //       </RadioGroup>
-  //     </Form.Group>
-  //   );
-
-  //   // Render other fields dynamically from formFields.json
-  //   formFields
-  //     .filter(
-  //       (field) =>
-  //         !['maritalStatus', 'spouseName', 'children', 'firstchildName', 'gender'].includes(
-  //           field.name
-  //         )
-  //     )
-  //     .forEach((field) => {
-  //       renderedFields.push(
-  //         <Form.Group controlId={field.name} key={field.name}>
-  //           <Form.ControlLabel>{field.label}</Form.ControlLabel>
-  //           <Form.Control
-  //             name={field.name}
-  //             type={field.type === 'password' ? 'password' : undefined}
-  //             placeholder={field.placeholder}
-  //             accepter={
-  //               field.type === 'select'
-  //                 ? SelectPicker
-  //                 : field.type === 'radio'
-  //                 ? RadioGroup
-  //                 : Input
-  //             }
-  //             data={
-  //               field.type === 'select'
-  //                 ? field.values.map((value) => ({ label: value, value }))
-  //                 : undefined
-  //             }
-  //             inline={field.type === 'radio' ? true : undefined}
-  //             value={formValues[field.name]}
-  //             onChange={(value) =>
-  //               setFormValues((prev) => ({ ...prev, [field.name]: value }))
-  //             }
-  //           />
-  //         </Form.Group>
-  //       );
-  //     });
-
-  //   // Render "Marital Status" field
-  //   const maritalStatusField = formFields.find(
-  //     (field) => field.name === 'maritalStatus'
-  //   );
-  //   if (maritalStatusField) {
-  //     renderedFields.push(
-  //       <Form.Group controlId={maritalStatusField.name} key={maritalStatusField.name}>
-  //         <Form.ControlLabel>{maritalStatusField.label}</Form.ControlLabel>
-  //         <RadioGroup
-  //           name={maritalStatusField.name}
-  //           value={formValues.maritalStatus}
-  //           onChange={handleMaritalStatusChange}
-  //           inline
-  //         >
-  //           {maritalStatusField.values.map((value) => (
-  //             <Radio value={value} key={value}>
-  //               {value}
-  //             </Radio>
-  //           ))}
-  //         </RadioGroup>
-  //       </Form.Group>
-  //     );
-  //   }
-
-  //   // Render dynamic fields based on marital status
-  //   if (formValues.maritalStatus === 'Married') {
-  //     const spouseField = formFields.find((field) => field.name === 'spouseName');
-  //     if (spouseField) {
-  //       renderedFields.push(
-  //         <Form.Group controlId={spouseField.name} key={spouseField.name}>
-  //           <Form.ControlLabel>{spouseField.label}</Form.ControlLabel>
-  //           <Form.Control
-  //             name={spouseField.name}
-  //             value={formValues.spouseName || ''}
-  //             onChange={(value) =>
-  //               setFormValues((prev) => ({ ...prev, spouseName: value }))
-  //             }
-  //             accepter={Input}
-  //           />
-  //         </Form.Group>
-  //       );
-  //     }
-
-  //     const childrenField = formFields.find((field) => field.name === 'children');
-  //     if (childrenField) {
-  //       renderedFields.push(
-  //         <Form.Group controlId={childrenField.name} key={childrenField.name}>
-  //           <Form.ControlLabel>{childrenField.label}</Form.ControlLabel>
-  //           <RadioGroup
-  //             name={childrenField.name}
-  //             value={formValues.children}
-  //             onChange={(value) =>
-  //               setFormValues((prev) => ({ ...prev, children: value }))
-  //             }
-  //             inline
-  //           >
-  //             <Radio value="Yes">Yes</Radio>
-  //             <Radio value="No">No</Radio>
-  //           </RadioGroup>
-  //         </Form.Group>
-  //       );
-  //     }
-  //   }
-
-  //   if (formValues.children === 'Yes') {
-  //     childrenNames.forEach((name, index) => {
-  //       renderedFields.push(
-  //         <Form.Group controlId={`child-${index}`} key={`child-${index}`}>
-  //           <Form.ControlLabel>Child {index + 1} Name</Form.ControlLabel>
-  //           <Input
-  //             value={name}
-  //             onChange={(value) => handleChildNameChange(value, index)}
-  //             placeholder={`Enter name of child ${index + 1}`}
-  //           />
-  //           <Button
-  //             type="submit"
-  //             appearance="link"
-  //             onClick={() => handleRemoveChild(index)}
-  //           >
-  //             Remove
-  //           </Button>
-  //         </Form.Group>
-  //       );
-  //     });
-
-  //     renderedFields.push(
-  //       <Button
-  //         appearance="primary"
-  //         onClick={handleAddChild}
-  //         className="my-2"
-  //         key="add-child-button"
-  //       >
-  //         Add Another Child
-  //       </Button>
-  //     );
-  //   }
-
-  //   return renderedFields;
-  // };
   const renderFields = () => {
     const renderedFields = [];
-  
     // Dynamically render all fields except Gender
     formFields
       .filter(
@@ -295,7 +134,6 @@ const App = () => {
             />
           </Form.Group>
         );
-  
         // Insert the Gender field after "Phone Number"
         if (field.name === 'phoneNumber') {
           renderedFields.push(
@@ -317,7 +155,6 @@ const App = () => {
           );
         }
       });
-  
     // Render "Marital Status" and related fields dynamically
     const maritalStatusField = formFields.find(
       (field) => field.name === 'maritalStatus'
@@ -341,7 +178,6 @@ const App = () => {
         </Form.Group>
       );
     }
-  
     // Add logic for spouse name and children fields
     if (formValues.maritalStatus === 'Married') {
       const spouseField = formFields.find((field) => field.name === 'spouseName');
@@ -402,7 +238,6 @@ const App = () => {
           </Form.Group>
         );
       });
-  
       renderedFields.push(
         <Button
           appearance="primary"
@@ -414,10 +249,8 @@ const App = () => {
         </Button>
       );
     }
-  
     return renderedFields;
   };
-  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Form
@@ -439,6 +272,5 @@ const App = () => {
       </Form>
     </div>
   );
-};
-
+}
 export default App;
