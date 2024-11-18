@@ -35,11 +35,30 @@ const generateSchema = (fields) => {
   return Schema.Model(schemaObject);
 };
 
+
 const App = () => {
   const formRef = useRef(null);
   const [formValues, setFormValues] = useState({});
   const [errors, setErrors] = useState({});
   const schema = generateSchema(formFields);
+
+  const handleMaritalStatusChange = (value) => {
+    if (value === 'Single') {
+      // Clear dependent fields when "Single" is selected
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        maritalStatus: value,
+        spouseName: undefined,
+        children: undefined,
+        firstchildName: undefined,
+      }));
+    } else {
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        maritalStatus: value,
+      }));
+    }
+  };
 
   const handleSubmit = () => {
     if (formRef.current.check()) {
@@ -107,6 +126,8 @@ const App = () => {
             name={maritalStatusField.name}
             accepter={RadioGroup}
             inline
+            value={formValues.maritalStatus}
+            onChange={handleMaritalStatusChange}
           >
             {maritalStatusField.values.map((value) => (
               <Radio value={value} key={value} className="mr-4">
