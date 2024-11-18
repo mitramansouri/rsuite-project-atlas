@@ -36,7 +36,7 @@ const generateSchema = (fields) => {
 };
 
 const App = () => {
-  const formRef = useRef(null); // Use useRef to avoid re-renders
+  const formRef = useRef(null);
   const [formValues, setFormValues] = useState({});
   const [errors, setErrors] = useState({});
   const schema = generateSchema(formFields);
@@ -49,162 +49,139 @@ const App = () => {
     }
   };
 
-  // return (
-  //   <div className="flex items-center justify-center min-h-screen bg-gray-100">
-  //     <Form
-  //       ref={formRef} // Assign the form reference here
-  //       model={schema}
-  //       formValue={formValues}
-  //       onChange={setFormValues}
-  //       onCheck={setErrors}
-  //       className="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4"
-  //     >
-  //       {formFields.map((field, index) => {
-  //         // Conditional rendering for "First Child's Name" field
-  //         if (field.name === 'firstchildName' && formValues.children !== 'Yes') {
-  //           return null;
-  //         }
+  const renderFields = () => {
+    const renderedFields = [];
 
-  //         // Conditional rendering for "Spouse's Name" field
-  //         if (field.name === 'spouseName' && formValues.maritalStatus !== 'Married') {
-  //           return null;
-  //         }
+    // Render all fields above "Marital Status"
+    const fieldsAboveMaritalStatus = formFields.filter(
+      (field) => !['maritalStatus', 'spouseName', 'children', 'firstchildName'].includes(field.name)
+    );
+    fieldsAboveMaritalStatus.forEach((field) => {
+      renderedFields.push(
+        <Form.Group controlId={field.name} key={field.name}>
+          <Form.ControlLabel className="block font-semibold text-gray-700">
+            {field.label}
+          </Form.ControlLabel>
+          <Form.Control
+            name={field.name}
+            type={field.type === 'password' ? 'password' : 'text'}
+            placeholder={field.placeholder}
+            accepter={
+              field.type === 'select' ? SelectPicker : field.type === 'radio' ? RadioGroup : Input
+            }
+            data={
+              field.type === 'select'
+                ? field.values.map((value) => ({ label: value, value }))
+                : undefined
+            }
+            inline={field.type === 'radio'}
+          />
+        </Form.Group>
+      );
+    });
 
-  //         return (
-  //           <Form.Group controlId={field.name} key={index}>
-  //             <Form.ControlLabel className="block font-semibold text-gray-700">
-  //               {field.label}
-  //             </Form.ControlLabel>
+    // Render "Marital Status" section below "Country"
+    const maritalStatusField = formFields.find((field) => field.name === 'maritalStatus');
+    if (maritalStatusField) {
+      renderedFields.push(
+        <Form.Group controlId={maritalStatusField.name} key={maritalStatusField.name}>
+          <Form.ControlLabel className="block font-semibold text-gray-700">
+            {maritalStatusField.label}
+          </Form.ControlLabel>
+          <Form.Control
+            name={maritalStatusField.name}
+            accepter={RadioGroup}
+            inline
+          >
+            {maritalStatusField.values.map((value) => (
+              <Radio value={value} key={value} className="mr-4">
+                {value}
+              </Radio>
+            ))}
+          </Form.Control>
+        </Form.Group>
+      );
+    }
 
-  //             {field.type === 'textfield' || field.type === 'email' || field.type === 'password' || field.type === 'phone' ? (
-  //               <Form.Control
-  //                 name={field.name}
-  //                 type={field.inputType || 'text'}
-  //                 placeholder={field.placeholder}
-  //                 accepter={Input}
-  //               />
-  //             ) : field.type === 'radio' ? (
-  //               <Form.Control
-  //                 name={field.name}
-  //                 accepter={RadioGroup}
-  //                 inline
-  //               >
-  //                 {field.values.map((option, i) => (
-  //                   <Radio key={i} value={option} className="mr-4">
-  //                     {option}
-  //                   </Radio>
-  //                 ))}
-  //               </Form.Control>
-  //             ) : field.type === 'select' ? (
-  //               <Form.Control
-  //                 name={field.name}
-  //                 accepter={SelectPicker}
-  //                 data={field.values.map((option) => ({ label: option, value: option }))}
-  //                 placeholder={field.placeholder}
-  //                 block
-  //               />
-  //             ) : null}
-  //           </Form.Group>
-  //         );
-  //       })}
+    // Render "Spouse's Name" if marital status is "Married"
+    if (formValues.maritalStatus === 'Married') {
+      const spouseField = formFields.find((field) => field.name === 'spouseName');
+      if (spouseField) {
+        renderedFields.push(
+          <Form.Group controlId={spouseField.name} key={spouseField.name}>
+            <Form.ControlLabel className="block font-semibold text-gray-700">
+              {spouseField.label}
+            </Form.ControlLabel>
+            <Form.Control
+              name={spouseField.name}
+              type="text"
+              placeholder={spouseField.placeholder}
+              accepter={Input}
+            />
+          </Form.Group>
+        );
+      }
+    }
 
-  //       <Button
-  //         appearance="primary"
-  //         onClick={handleSubmit}
-  //         className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-  //       >
-  //         Submit
-  //       </Button>
-  //     </Form>
-  //   </div>
-  // );
+    // Render "Do you have children?" if marital status is "Married"
+    if (formValues.maritalStatus === 'Married') {
+      const childrenField = formFields.find((field) => field.name === 'children');
+      if (childrenField) {
+        renderedFields.push(
+          <Form.Group controlId={childrenField.name} key={childrenField.name}>
+            <Form.ControlLabel className="block font-semibold text-gray-700">
+              {childrenField.label}
+            </Form.ControlLabel>
+            <Form.Control
+              name={childrenField.name}
+              accepter={RadioGroup}
+              inline
+            >
+              {childrenField.values.map((value) => (
+                <Radio value={value} key={value} className="mr-4">
+                  {value}
+                </Radio>
+              ))}
+            </Form.Control>
+          </Form.Group>
+        );
+      }
+    }
+
+    // Render "First Child's Name" if "Do you have children?" is "Yes"
+    if (formValues.children === 'Yes') {
+      const firstChildField = formFields.find((field) => field.name === 'firstchildName');
+      if (firstChildField) {
+        renderedFields.push(
+          <Form.Group controlId={firstChildField.name} key={firstChildField.name}>
+            <Form.ControlLabel className="block font-semibold text-gray-700">
+              {firstChildField.label}
+            </Form.ControlLabel>
+            <Form.Control
+              name={firstChildField.name}
+              type="text"
+              placeholder={firstChildField.placeholder}
+              accepter={Input}
+            />
+          </Form.Group>
+        );
+      }
+    }
+
+    return renderedFields;
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Form
-        ref={formRef} // Assign the form reference here
+        ref={formRef}
         model={schema}
         formValue={formValues}
         onChange={setFormValues}
         onCheck={setErrors}
         className="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4"
       >
-        {formFields.map((field, index) => {
-          if (field.name === 'spouseName' || field.name === 'maritalStatus') {
-            // Skip rendering the fields here to handle them together below
-            return null;
-          }
-  
-          // Conditional rendering for "First Child's Name" field
-          if (field.name === 'firstchildName' && formValues.children !== 'Yes') {
-            return null;
-          }
-  
-          return (
-            <Form.Group controlId={field.name} key={index}>
-              <Form.ControlLabel className="block font-semibold text-gray-700">
-                {field.label}
-              </Form.ControlLabel>
-  
-              {field.type === 'textfield' || field.type === 'email' || field.type === 'password' || field.type === 'phone' ? (
-                <Form.Control
-                  name={field.name}
-                  type={field.inputType || 'text'}
-                  placeholder={field.placeholder}
-                  accepter={Input}
-                />
-              ) : field.type === 'radio' ? (
-                <Form.Control
-                  name={field.name}
-                  accepter={RadioGroup}
-                  inline
-                >
-                  {field.values.map((option, i) => (
-                    <Radio key={i} value={option} className="mr-4">
-                      {option}
-                    </Radio>
-                  ))}
-                </Form.Control>
-              ) : field.type === 'select' ? (
-                <Form.Control
-                  name={field.name}
-                  accepter={SelectPicker}
-                  data={field.values.map((option) => ({ label: option, value: option }))}
-                  placeholder={field.placeholder}
-                  block
-                />
-              ) : null}
-            </Form.Group>
-          );
-        })}
-  
-        {/* Handle Marital Status and Spouse's Name together */}
-        <Form.Group controlId="maritalStatus">
-          <Form.ControlLabel className="block font-semibold text-gray-700">
-            Marital Status
-          </Form.ControlLabel>
-          <Form.Control
-            name="maritalStatus"
-            accepter={RadioGroup}
-            inline
-          >
-            <Radio value="Single" className="mr-4">Single</Radio>
-            <Radio value="Married" className="mr-4">Married</Radio>
-          </Form.Control>
-        </Form.Group>
-        {formValues.maritalStatus === 'Married' && (
-          <Form.Group controlId="spouseName">
-            <Form.ControlLabel className="block font-semibold text-gray-700">
-              Spouse's Name
-            </Form.ControlLabel>
-            <Form.Control
-              name="spouseName"
-              type="text"
-              placeholder="Enter your spouse's name"
-              accepter={Input}
-            />
-          </Form.Group>
-        )}
-  
+        {renderFields()}
         <Button
           appearance="primary"
           onClick={handleSubmit}
@@ -215,7 +192,6 @@ const App = () => {
       </Form>
     </div>
   );
-  
 };
 
 export default App;
