@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Form, Button, Input, RadioGroup, Radio, Schema } from 'rsuite';
+import { Form, Button, RadioGroup, Radio, Schema, Input } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import './index.css';
 import formFields from './formFields.json';
@@ -30,220 +30,151 @@ const generateSchema = (fields) => {
 
   return Schema.Model(schemaObject);
 };
+
+
 const App = () => {
   const formRef = useRef(null);
+
   const [formValues, setFormValues] = useState(() => {
     const initialValues = formFields.reduce((acc, field) => {
-      acc[field.name] = '';
+      if (field.type === 'checkbox') {
+        acc[field.name] = field.defaultChecked || false;
+      } else if (field.type === 'radio') {
+        acc[field.name] =
+          field.defaultChecked !== undefined
+            ? field.defaultChecked
+            : typeof field.values[0] === 'object'
+              ? field.values[0].value
+              : field.values[0];
+      } else {
+        acc[field.name] = '';
+      }
       return acc;
     }, {});
     return initialValues;
   });
+  console.log('Initial Form Values:', formValues);
   // eslint-disable-next-line no-unused-vars
   const [errors, setErrors] = useState({});
-  const [childrenNames, setChildrenNames] = useState(['']);
-
   const schema = generateSchema(formFields);
+  console.log('Generated Schema:', schema);
 
-  const handleMaritalStatusChange = (value) => {
-    if (value === 'Single') {
-      setFormValues((prevValues) => ({
-        ...prevValues,
-        maritalStatus: value,
-        spouseName: '', // Set to empty string instead of undefined
-        children: '',   // Set to empty string instead of undefined
-        childrenNames: [], // Reset child names
-      }));
-      setChildrenNames(['']); // Reset child-related fields
-    } else {
-      setFormValues((prevValues) => ({
-        ...prevValues,
-        maritalStatus: value,
-      }));
-    }
-  };
-  
-
-  const handleAddChild = () => {
-    setChildrenNames([...childrenNames, '']);
-  };
-
-  const handleRemoveChild = (index) => {
-    const updatedChildren = childrenNames.filter((_, i) => i !== index);
-    setChildrenNames(updatedChildren);
+  const handleCheckboxChange = (name, checked) => {
     setFormValues((prevValues) => ({
       ...prevValues,
-      childrenNames: updatedChildren,
+      [name]: checked,
     }));
   };
 
-  const handleChildNameChange = (value, index) => {
-    const updatedChildren = [...childrenNames];
-    updatedChildren[index] = value;
-    setChildrenNames(updatedChildren);
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      childrenNames: updatedChildren,
-    }));
-  };
-
-  const handleSubmit = () => {
-    if (formRef.current.check()) {
-      console.log('Form Values:', formValues);
-    } else {
-      console.log('Validation failed');
-    }
-  };
   const renderFields = () => {
-    const renderedFields = [];
-    
-    formFields.forEach((field) => {
-      if (field.name === 'gender') {
-        // Dynamically render the Gender field
-        renderedFields.push(
+    return formFields.map((field) => {
+      if (field.hideWhen) {
+        const shouldHide = field.hideWhen.some((condition) => {
+          const { relation, conditions } = condition;
+          const checkConditions = conditions.map((cond) => {
+            const fieldValue = formValues[cond.name];
+            switch (relation) {
+              case 'equal':
+                return fieldValue === cond.value;
+              case 'notEqual':
+                return fieldValue !== cond.value;
+              default:
+                return false;
+            }
+          });
+          return checkConditions.some(Boolean);
+        });
+
+        if (shouldHide) return null;
+      }
+
+      if (field.type === 'checkbox') {
+        return (
+          <Form.Group controlId={field.name} key={field.name}>
+            <Form.ControlLabel>{field.label}</Form.ControlLabel>
+            <input
+              type="checkbox"
+              name={field.name}
+              checked={formValues[field.name]}
+              onChange={(event) => handleCheckboxChange(field.name, event.target.checked)}
+            />
+          </Form.Group>
+        );
+      }
+
+      if (field.type === 'radio') {
+        return (
           <Form.Group controlId={field.name} key={field.name}>
             <Form.ControlLabel>{field.label}</Form.ControlLabel>
             <RadioGroup
               name={field.name}
               value={formValues[field.name]}
               onChange={(value) =>
-                setFormValues((prevValues) => ({ ...prevValues, [field.name]: value }))
+                setFormValues((prevValues) => ({
+                  ...prevValues,
+                  [field.name]: value,
+                }))
               }
               inline
             >
-              {field.values.map((value) => (
-                <Radio value={value} key={value}>
-                  {value}
-                </Radio>
-              ))}
-            </RadioGroup>
-          </Form.Group>
-        );
-      } else if (field.name === 'maritalStatus') {
-        // Render the Marital Status field
-        renderedFields.push(
-          <Form.Group controlId={field.name} key={field.name}>
-            <Form.ControlLabel>{field.label}</Form.ControlLabel>
-            <RadioGroup
-              name={field.name}
-              value={formValues.maritalStatus}
-              onChange={handleMaritalStatusChange}
-              inline
-            >
-              {field.values.map((value) => (
-                <Radio value={value} key={value}>
-                  {value}
-                </Radio>
-              ))}
-            </RadioGroup>
-          </Form.Group>
-        );
-      } else if (!['spouseName', 'children', 'firstchildName'].includes(field.name)) {
-        // Render other dynamic fields
-        renderedFields.push(
-          <Form.Group controlId={field.name} key={field.name}>
-            <Form.ControlLabel>{field.label}</Form.ControlLabel>
-            <Form.Control
-              name={field.name}
-              type={field.type === 'password' ? 'password' : undefined}
-              placeholder={field.placeholder}
-              accepter={
-                field.type === 'select'
-                  ? SelectPicker
-                  : field.type === 'radio'
-                  ? RadioGroup
-                  : Input
-              }
-              data={
-                field.type === 'select'
-                  ? field.values.map((value) => ({ label: value, value }))
-                  : undefined
-              }
-              inline={field.type === 'radio' ? true : undefined}
-              value={formValues[field.name]}
-              onChange={(value) =>
-                setFormValues((prev) => ({ ...prev, [field.name]: value }))
-              }
-            />
-          </Form.Group>
-        );
-      }
-    });
-  
-    if (formValues.maritalStatus === 'Married') {
-      const spouseField = formFields.find((field) => field.name === 'spouseName');
-      if (spouseField) {
-        renderedFields.push(
-          <Form.Group controlId={spouseField.name} key={spouseField.name}>
-            <Form.ControlLabel>{spouseField.label}</Form.ControlLabel>
-            <Form.Control
-              name={spouseField.name}
-              value={formValues.spouseName || ''}
-              onChange={(value) =>
-                setFormValues((prev) => ({ ...prev, spouseName: value }))
-              }
-              accepter={Input}
-            />
-          </Form.Group>
-        );
-      }
-  
-      const childrenField = formFields.find((field) => field.name === 'children');
-      if (childrenField) {
-        renderedFields.push(
-          <Form.Group controlId={childrenField.name} key={childrenField.name}>
-            <Form.ControlLabel>{childrenField.label}</Form.ControlLabel>
-            <RadioGroup
-              name={childrenField.name}
-              value={formValues.children}
-              onChange={(value) =>
-                setFormValues((prev) => ({ ...prev, children: value }))
-              }
-              inline
-            >
-              <Radio value="Yes">Yes</Radio>
-              <Radio value="No">No</Radio>
+              {field.values.map((value) =>
+                typeof value === 'object' ? (
+                  <Radio key={value.value} value={value.value}>
+                    {value.label}
+                  </Radio>
+                ) : (
+                  <Radio key={value} value={value}>
+                    {value}
+                  </Radio>
+                )
+              )}
             </RadioGroup>
           </Form.Group>
         );
       }
-    }
-  
-    if (formValues.children === 'Yes') {
-      childrenNames.forEach((name, index) => {
-        renderedFields.push(
-          <Form.Group controlId={`child-${index}`} key={`child-${index}`}>
-            <Form.ControlLabel>Child {index + 1} Name</Form.ControlLabel>
-            <Input
-              value={name}
-              onChange={(value) => handleChildNameChange(value, index)}
-              placeholder={`Enter name of child ${index + 1}`}
-            />
-            <Button
-              type="submit"
-              appearance="link"
-              onClick={() => handleRemoveChild(index)}
-            >
-              Remove
-            </Button>
-          </Form.Group>
-        );
-      });
-      renderedFields.push(
-        <Button
-          appearance="primary"
-          onClick={handleAddChild}
-          className="my-2"
-          key="add-child-button"
-        >
-          Add Another Child
-        </Button>
+      if (field.type === 'radio' && !formValues[field.name]) {
+        console.warn(`Radio button "${field.name}" does not have a default value.`);
+      }
+      
+      return (
+        <Form.Group controlId={field.name} key={field.name}>
+          <Form.ControlLabel>{field.label}</Form.ControlLabel>
+          <Form.Control
+            name={field.name}
+            type={field.type === 'password' ? 'password' : undefined}
+            placeholder={field.placeholder}
+            accepter={field.type === 'select' ? SelectPicker : Input}
+            data={
+              field.type === 'select'
+                ? field.values.map((value) => ({ label: value, value: value }))
+                : undefined
+            }
+            value={formValues[field.name]}
+            onChange={(value) =>
+              setFormValues((prevValues) => ({
+                ...prevValues,
+                [field.name]: value,
+              }))
+            }
+          />
+        </Form.Group>
       );
+    });
+  };
+  const handleSubmit = () => {
+    const isValid = formRef.current.check();
+    console.log('Form Values:', formValues);
+    if (isValid) {
+      console.log('Form Submitted Successfully:', formValues);
+    } else {
+      console.error('Validation failed. Errors:', errors);
+      Object.keys(errors).forEach((field) => {
+        console.error(`Validation error in "${field}":`, errors[field]);
+      });
     }
-  
-    return renderedFields;
   };
   
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Form
@@ -251,7 +182,10 @@ const App = () => {
         model={schema}
         formValue={formValues}
         onChange={setFormValues}
-        onCheck={setErrors}
+        onCheck={(newErrors) => {
+          setErrors(newErrors);
+          console.log('Validation Errors:', newErrors);
+        }}
         className="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4"
       >
         {renderFields()}
@@ -265,5 +199,6 @@ const App = () => {
       </Form>
     </div>
   );
-}
+};
+
 export default App;

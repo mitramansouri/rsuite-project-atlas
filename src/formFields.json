@@ -19,7 +19,18 @@
       "required": true,
       "minLength": 2,
       "errorMessage": "Last Name must be at least 2 characters long"
-    }
+    },
+    "hideWhen": [
+      {
+        "relation": "equal",
+        "conditions": [
+          {
+            "name": "firstName",
+            "value": "Alex"
+          }
+        ]
+      }
+    ]
   },
   {
     "type": "email",
@@ -54,7 +65,7 @@
       "required": true,
       "errorMessage": "Please select your gender"
     }
-  },  
+  },
   {
     "type": "select",
     "label": "Country",
@@ -76,36 +87,83 @@
       "minLength": 6,
       "errorMessage": "Password must be at least 6 characters long"
     }
-  }, 
+  },
+  {
+    "type": "checkbox",
+    "label": "Have you been Married?",
+    "name": "PreviousMarriage",
+    "defaultChecked": false,
+    "value": false,
+    "validation": {
+      "required": false
+    }
+  },  
   {
     "type": "radio",
-    "label": "Marital Status",
-    "name": "maritalStatus",
-    "values": ["Single", "Married"],
+    "label": "Has relationship?",
+    "name": "HasKinshipRelationship",
+    "values": [
+      { "label": "Yes", "value": true },
+      { "label": "No", "value": false }
+    ],
+    "defaultChecked": false,
     "validation": {
-      "required": true,
-      "errorMessage": "Please select your marital status"
-    }
+      "required": false
+    },
+    "hideWhen": [
+      {
+        "relation": "equal",
+        "conditions": [
+          {
+            "name": "PreviousMarriage",
+            "value": false
+          }
+        ]
+      }
+    ]
   },
   {
     "type": "radio",
     "label": "Do you have children?",
-    "name": "children",
-    "values": ["Yes", "No"],
+    "name": "HasChild",
+    "values": [
+      { "label": "Yes", "value": true },
+      { "label": "No", "value": false }
+    ],
+    "defaultChecked": false,
     "validation": {
-      "required": true,
-      "errorMessage": "Please specify if you have children"
-    }
+      "required": false
+    },
+    "hideWhen": [
+      {
+        "relation": "equal",
+        "conditions": [
+          {
+            "name": "PreviousMarriage",
+            "value": false
+          }
+        ]
+      }
+    ]
   },
   {
-    "type": "textfield",
-    "label": "Spouse's Name",
-    "name": "spouseName",
-    "placeholder": "Enter your Spouse's Name...",
+    "type": "number",
+    "label": "How many kids do you have?",
+    "name": "ChildNumber",
+    "placeholder": "Enter the number of children...",
     "validation": {
-      "required": false,
-      "minLength": 2,
-      "errorMessage": "First Name must be at least 2 characters long"
-    }
+      "required": false
+    },
+    "hideWhen": [
+      {
+        "relation": "equal",
+        "conditions": [
+          {
+            "name": "HasChild",
+            "value": false
+          }
+        ]
+      }
+    ]
   }
 ]
