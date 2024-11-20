@@ -5,31 +5,63 @@ import './index.css';
 import formFields from './formFields.json';
 import { SelectPicker } from 'rsuite';
 
-const { StringType } = Schema.Types;
 
 const generateSchema = (fields) => {
   const schemaObject = fields.reduce((acc, field) => {
-    let type = StringType();
-    const validation = field.validation || {};
-    if (validation.required) {
-      type = type.isRequired(validation.errorMessage || `${field.label} is required`);
+    let type;
+
+    if (field.type === 'checkbox' || (field.type === 'radio' && typeof field.values[0] === 'object' && typeof field.values[0].value === 'boolean')) {
+      // Use BooleanType for boolean fields
+      type = Schema.Types.BooleanType().isRequired(
+        field.validation?.required ? field.validation?.errorMessage || `${field.label} is required` : false
+      );
+    } else {
+      // Default to StringType for other fields
+      type = Schema.Types.StringType();
+      const validation = field.validation || {};
+      if (validation.required) {
+        if (Array.isArray(validation.required)) {
+            // Check the required conditions
+            type = type.addRule((value, data) => {
+                return validation.required.every((rule) => {
+                    const { relation, conditions } = rule;
+                    return conditions.every((cond) => {
+                        const fieldValue = data[cond.name];
+                        switch (relation) {
+                            case 'equal':
+                                return fieldValue === cond.value;
+                            case 'notEqual':
+                                return fieldValue !== cond.value;
+                            default:
+                                return true;
+                        }
+                    });
+                });
+            }, validation.errorMessage || `${field.label} is required`);
+        } else {
+            // Regular required rule
+            type = type.isRequired(validation.errorMessage || `${field.label} is required`);
+        }
+    }    
+      if (validation.minLength) {
+        type = type.minLength(validation.minLength, validation.errorMessage);
+      }
+      if (validation.isEmail) {
+        type = type.isEmail(validation.errorMessage || 'Please enter a valid email address');
+      }
+      if (validation.pattern) {
+        const regex = new RegExp(validation.pattern);
+        type = type.pattern(regex, validation.errorMessage);
+      }
     }
-    if (validation.minLength) {
-      type = type.minLength(validation.minLength, validation.errorMessage);
-    }
-    if (validation.isEmail) {
-      type = type.isEmail(validation.errorMessage || 'Please enter a valid email address');
-    }
-    if (validation.pattern) {
-      const regex = new RegExp(validation.pattern);
-      type = type.pattern(regex, validation.errorMessage);
-    }
+
     acc[field.name] = type;
     return acc;
   }, {});
 
   return Schema.Model(schemaObject);
 };
+
 
 
 const App = () => {
@@ -44,8 +76,8 @@ const App = () => {
           field.defaultChecked !== undefined
             ? field.defaultChecked
             : typeof field.values[0] === 'object'
-              ? field.values[0].value
-              : field.values[0];
+            ? field.values[0].value
+            : field.values[0];
       } else {
         acc[field.name] = '';
       }
@@ -53,6 +85,8 @@ const App = () => {
     }, {});
     return initialValues;
   });
+  
+  
   console.log('Initial Form Values:', formValues);
   // eslint-disable-next-line no-unused-vars
   const [errors, setErrors] = useState({});
@@ -161,6 +195,7 @@ const App = () => {
       );
     });
   };
+
   const handleSubmit = () => {
     const isValid = formRef.current.check();
     console.log('Form Values:', formValues);
@@ -173,6 +208,7 @@ const App = () => {
       });
     }
   };
+  
   
 
   return (

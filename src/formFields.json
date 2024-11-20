@@ -16,7 +16,17 @@
     "name": "lastName",
     "placeholder": "Enter your Last Name...",
     "validation": {
-      "required": true,
+      "required": [
+        {
+          "relation": "notEqual",
+          "conditions": [
+            {
+              "name": "firstName",
+              "value": "Alex"
+            }
+          ]
+        }
+      ],
       "minLength": 2,
       "errorMessage": "Last Name must be at least 2 characters long"
     },
@@ -95,7 +105,8 @@
     "defaultChecked": false,
     "value": false,
     "validation": {
-      "required": false
+      "required": true,
+      "errorMessage": "Please specify whether you have been married."
     }
   },  
   {
