@@ -1,0 +1,14 @@
+{
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "gender": "Gender",
+    "country": "Country",
+    "password": "Password",
+    "PreviousMarriage": "Has been Married?",
+    "HasKinshipRelationship": "Has Kinship Married?",
+    "HasChild": "Has Child?",
+    "ChildNumber": "Number of Children"
+  }
+  

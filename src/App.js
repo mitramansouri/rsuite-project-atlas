@@ -4,6 +4,7 @@ import 'rsuite/dist/rsuite.min.css';
 import './index.css';
 import formFields from './formFields.json';
 import { SelectPicker } from 'rsuite';
+import { useNavigate } from 'react-router-dom'; // For redirection
 
 
 const generateSchema = (fields) => {
@@ -54,19 +55,15 @@ const generateSchema = (fields) => {
         type = type.pattern(regex, validation.errorMessage);
       }
     }
-
     acc[field.name] = type;
     return acc;
   }, {});
-
   return Schema.Model(schemaObject);
 };
 
-
-
 const App = () => {
-  const formRef = useRef(null);
 
+  const formRef = useRef(null);
   const [formValues, setFormValues] = useState(() => {
     const initialValues = formFields.reduce((acc, field) => {
       if (field.type === 'checkbox') {
@@ -85,9 +82,7 @@ const App = () => {
     }, {});
     return initialValues;
   });
-  
-  
-  console.log('Initial Form Values:', formValues);
+
   // eslint-disable-next-line no-unused-vars
   const [errors, setErrors] = useState({});
   const schema = generateSchema(formFields);
@@ -195,14 +190,15 @@ const App = () => {
       );
     });
   };
+  const navigate = useNavigate(); // For navigation
 
   const handleSubmit = () => {
     const isValid = formRef.current.check();
-    console.log('Form Values:', formValues);
     if (isValid) {
-      console.log('Form Submitted Successfully:', formValues);
+      localStorage.setItem('confirmationData', JSON.stringify(formValues));
+      // Redirect to the confirmation page
+      navigate('/confirmation');
     } else {
-      console.error('Validation failed. Errors:', errors);
       Object.keys(errors).forEach((field) => {
         console.error(`Validation error in "${field}":`, errors[field]);
       });
